@@ -1,5 +1,6 @@
 import localFont from "next/font/local";
 import Image from "next/image";
+import { useState } from "react";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -13,6 +14,78 @@ const geistMono = localFont({
 });
 
 export default function Home() {
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    phone: "",
+    terms: false,
+  });
+  const [errors, setErrors] = useState({});
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.fullName.trim()) {
+      newErrors.fullName = "Full name is required";
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Email is invalid";
+    }
+
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+
+    if (!formData.terms) {
+      newErrors.terms = "You must accept the terms and conditions";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: undefined,
+      }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (validateForm()) {
+      try {
+        // Add your API call here
+        console.log("Form submitted:", formData);
+        // Reset form after successful submission
+        setFormData({
+          fullName: "",
+          email: "",
+          password: "",
+          phone: "",
+          terms: false,
+        });
+      } catch (error) {
+        console.error("Submission error:", error);
+      }
+    }
+  };
+
   return (
     <div
       className={`${geistSans.variable} ${geistMono.variable} min-h-screen p-8 flex items-center justify-center font-[family-name:var(--font-geist-sans)]`}
@@ -27,13 +100,13 @@ export default function Home() {
             height={38}
             priority
           />
-          <h1 className="text-2xl font-bold mb-2">Create Account</h1>
+          <h1 className="text-2xl font-bold mb-2">Sample Create Account</h1>
           <p className="text-gray-600 dark:text-gray-400 text-sm">
             Fill in your information to get started
           </p>
         </div>
 
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <label className="block text-sm font-medium" htmlFor="fullName">
               Full Name
@@ -42,9 +115,17 @@ export default function Home() {
               type="text"
               id="fullName"
               name="fullName"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-800"
-              required
+              value={formData.fullName}
+              onChange={handleChange}
+              className={`w-full px-3 py-2 border ${
+                errors.fullName
+                  ? "border-red-500"
+                  : "border-gray-300 dark:border-gray-700"
+              } rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-800`}
             />
+            {errors.fullName && (
+              <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -55,9 +136,17 @@ export default function Home() {
               type="email"
               id="email"
               name="email"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-800"
-              required
+              value={formData.email}
+              onChange={handleChange}
+              className={`w-full px-3 py-2 border ${
+                errors.email
+                  ? "border-red-500"
+                  : "border-gray-300 dark:border-gray-700"
+              } rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-800`}
             />
+            {errors.email && (
+              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -68,9 +157,17 @@ export default function Home() {
               type="password"
               id="password"
               name="password"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-800"
-              required
+              value={formData.password}
+              onChange={handleChange}
+              className={`w-full px-3 py-2 border ${
+                errors.password
+                  ? "border-red-500"
+                  : "border-gray-300 dark:border-gray-700"
+              } rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-800`}
             />
+            {errors.password && (
+              <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -81,6 +178,8 @@ export default function Home() {
               type="tel"
               id="phone"
               name="phone"
+              value={formData.phone}
+              onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-800"
             />
           </div>
@@ -90,8 +189,11 @@ export default function Home() {
               type="checkbox"
               id="terms"
               name="terms"
-              className="rounded border-gray-300 dark:border-gray-700 text-blue-500 focus:ring-blue-500"
-              required
+              checked={formData.terms}
+              onChange={handleChange}
+              className={`rounded border-gray-300 dark:border-gray-700 text-blue-500 focus:ring-blue-500 ${
+                errors.terms ? "border-red-500" : ""
+              }`}
             />
             <label
               className="text-sm text-gray-600 dark:text-gray-400"
@@ -100,6 +202,9 @@ export default function Home() {
               I agree to the Terms and Conditions
             </label>
           </div>
+          {errors.terms && (
+            <p className="text-red-500 text-xs">{errors.terms}</p>
+          )}
 
           <button
             type="submit"
