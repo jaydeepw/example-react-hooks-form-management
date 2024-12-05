@@ -14,6 +14,7 @@ const geistMono = localFont({
 });
 
 export default function Home() {
+  // This is where we will hold the form data
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -22,6 +23,8 @@ export default function Home() {
     terms: false,
   });
   const [errors, setErrors] = useState({});
+  const [showModal, setShowModal] = useState(false);
+  const [submittedData, setSubmittedData] = useState(null);
 
   const validateForm = () => {
     const newErrors = {};
@@ -70,8 +73,10 @@ export default function Home() {
 
     if (validateForm()) {
       try {
-        // Add your API call here
-        console.log("Form submitted:", formData);
+        // Store the submitted data
+        setSubmittedData(formData);
+        setShowModal(true);
+
         // Reset form after successful submission
         setFormData({
           fullName: "",
@@ -221,6 +226,35 @@ export default function Home() {
           </a>
         </p>
       </main>
+
+      {/* Add Modal */}
+      {showModal && submittedData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
+            <h2 className="text-xl font-bold mb-4">Submission Successful!</h2>
+            <div className="space-y-2">
+              <p>
+                <span className="font-medium">Full Name:</span>{" "}
+                {submittedData.fullName}
+              </p>
+              <p>
+                <span className="font-medium">Email:</span>{" "}
+                {submittedData.email}
+              </p>
+              <p>
+                <span className="font-medium">Phone:</span>{" "}
+                {submittedData.phone || "Not provided"}
+              </p>
+            </div>
+            <button
+              onClick={() => setShowModal(false)}
+              className="mt-6 w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
